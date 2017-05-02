@@ -1,4 +1,4 @@
-;;; src/all.lisp ---
+;;; src/nodes.lisp
 
 ;; Copyright (c) 2017 David Vázquez Púa
 
@@ -17,16 +17,14 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with pgsnipe.  If not, see <http://www.gnu.org/licenses/>.
 
-(uiop/package:define-package :pgsnipe/all
-  (:nicknames :pgsnipe)
-  (:use :common-lisp :pgsnipe/nodes))
-
-(in-package :pgsnipe/all)
-
-(defvar *version*
-  (asdf:component-version (asdf:find-system "pgsnipe"))
-  "The pgsnipe version")
-
-#+nil
-(defun connect ()
-  (apply #'postmodern:connect-toplevel (pgsnipe/postgres-connstring:parse "postgresql:///")))
+(uiop/package:define-package :pgsnipe/nodes
+  (:use :common-lisp)
+  (:shadow :sequence)
+  (:recycle :pgsnipe/nodes :pgsnipe/nodes/sequence)
+  (:use-reexport :pgsnipe/nodes/base
+                 :pgsnipe/nodes/catalog
+                 :pgsnipe/nodes/schema
+                 :pgsnipe/nodes/sequence
+                 :pgsnipe/nodes/table
+                 :pgsnipe/nodes/column
+                 :pgsnipe/nodes/constraint))

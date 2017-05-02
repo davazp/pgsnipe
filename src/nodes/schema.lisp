@@ -1,4 +1,4 @@
-;;; src/all.lisp ---
+;;; src/nodes/schema.lisp
 
 ;; Copyright (c) 2017 David Vázquez Púa
 
@@ -17,16 +17,25 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with pgsnipe.  If not, see <http://www.gnu.org/licenses/>.
 
-(uiop/package:define-package :pgsnipe/all
-  (:nicknames :pgsnipe)
-  (:use :common-lisp :pgsnipe/nodes))
+(defpackage :pgsnipe/nodes/schema
+  (:use :common-lisp :pgsnipe/nodes/base :pgsnipe/lexical)
+  (:export #:schema
+           #:schema-name
+           #:schema-owner))
 
-(in-package :pgsnipe/all)
+(in-package :pgsnipe/nodes/schema)
 
-(defvar *version*
-  (asdf:component-version (asdf:find-system "pgsnipe"))
-  "The pgsnipe version")
+(defclass schema (node)
+  ((name
+    :initarg :name
+    :reader schema-name)
+   (owner
+    :initarg :owner
+    :reader schema-owner)))
 
-#+nil
-(defun connect ()
-  (apply #'postmodern:connect-toplevel (pgsnipe/postgres-connstring:parse "postgresql:///")))
+(defmethod print-object ((x schema) stream)
+  (print-unreadable-object (x stream :type t)
+    (prin1 (schema-name x) stream)))
+
+(defmethod sql-qualified-name ((x schema))
+  (sql-identifier (schema-name x)))
