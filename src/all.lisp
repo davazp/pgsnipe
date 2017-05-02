@@ -19,7 +19,9 @@
 
 (uiop/package:define-package :pgsnipe/all
   (:nicknames :pgsnipe)
-  (:use :common-lisp :pgsnipe/nodes))
+  (:use :common-lisp
+        :pgsnipe/nodes
+        :pgsnipe/inspect))
 
 (in-package :pgsnipe/all)
 
