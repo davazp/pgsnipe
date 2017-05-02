@@ -16,7 +16,7 @@
 
 ;; You should have received a copy of the GNU General Public License
 ;; along with pgsnipe.  If not, see <http://www.gnu.org/licenses/>.
-
+ 
 (uiop/package:define-package :pgsnipe/lexical
   (:use :common-lisp)
   (:export #:*default-schema*
