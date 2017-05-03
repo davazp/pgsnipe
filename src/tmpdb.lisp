@@ -44,5 +44,5 @@ the PostgreSQL utility commands do.")
 
 
 (defun dropdb (database)
-  (with-connection (list "postgres" (get-username) nil :unix)
+  (with-connection (list *maintenance-database* (get-username) nil :unix)
     (execute (format nil "DROP DATABASE ~a" database))))

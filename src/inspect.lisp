@@ -24,7 +24,8 @@
         :alexandria
         :common-lisp
         :postmodern)
-  (:export #:inspect-catalog))
+  (:export #:inspect-catalog
+           #:inspect-databases))
 
 (in-package :pgsnipe/inspect)
 
@@ -282,7 +283,7 @@ WHERE deptype='n'
 
 (defun inspect-sequences ()
   (mapcar (lambda (row)
-            (register-object (apply #'make-instance 'sequence row)))
+            (register-object (apply #'make-instance 'sequence* row)))
           (query-sequences)))
 
 (defun inspect-schemata ()

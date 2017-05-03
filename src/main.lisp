@@ -20,15 +20,19 @@
 (uiop/package:define-package :pgsnipe/main
   (:nicknames :pgsnipe)
   (:use :common-lisp
-        :pgsnipe/nodes
+        :pgsnipe/tmpdb
+        :pgsnipe/execute
         :pgsnipe/inspect
-        :pgsnipe/diff))
+        :pgsnipe/diff
+        :alexandria)
+  (:export #:migrate))
 
 (in-package :pgsnipe/main)
 
 (defvar *version*
   (asdf:component-version (asdf:find-system "pgsnipe"))
   "The pgsnipe version")
+
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (require "sb-concurrency"))
@@ -50,12 +54,31 @@
     (values source target)))
 
 
-(defun diff-databases (source-connstring target-connstring)
-  (multiple-value-bind (source target)
-      (inspect-databases source-connstring target-connstring)
-    (generate-diff source target *standard-output*)))
+(defun diff-databases (source-connstring target-connstring &key commit)
+  (with-output-to-string (out)
+    (multiple-value-bind (source target)
+        (inspect-databases source-connstring target-connstring)
+      (generate-diff source target out :commit commit))))
 
 
-#+nil
-(defun connect ()
-  (apply #'postmodern:connect-toplevel (pgsnipe/postgres-connstring:parse "postgresql:///")))
+(defun migrate (connstring script &rest others &key &allow-other-keys)
+  "Migrate the database at CONNSTRING to look like the database
+described in the SCRIPT file."
+  ;; We open the script early to ensure it exists, as it is a faster
+  ;; operation than creating the temporary database.
+  (with-input-from-file (input script)
+    (let* ((tmpdb-name (create-tmpdb))
+           (tmpdb (format nil "postgres:///~a" tmpdb-name)))
+      (unwind-protect
+           (progn
+             ;; Create the temporary table and apply the script to it.
+             (execute-stream tmpdb input)
+             ;; Generate the script to update the database, by
+             ;; comparing the temporary database we just created to
+             ;; the target database.
+             (let ((delta (apply #'diff-databases tmpdb connstring others)))
+               (write-string delta *standard-output*)
+               ;; Apply the delta script generated to the target database
+               (execute-string connstring delta)))
+        ;; Destroy the temporary database
+        (dropdb tmpdb-name)))))

@@ -17,44 +17,87 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with pgsnipe.  If not, see <http://www.gnu.org/licenses/>.
 
-(defpackage :pgsnipe-cli/main
-  (:use :common-lisp
+(uiop:define-package :pgsnipe-cli/main
+  (:mix :common-lisp
         :pgsnipe
         :postmodern)
   (:nicknames :pgsnipe-cli)
+  (:import-from :unix-opts)
   (:export #:main))
 
 (in-package :pgsnipe-cli)
 
 (defvar *program*)
 
+
+
+(opts:define-opts
+  (:name :help
+   :description "print this help text"
+   :short #\h
+   :long "help")
+  (:name :commit
+   :description "commit the migration script"
+   :long "commit")
+  (:name :verbose
+   :description "verbose output"
+   :short #\v
+   :long "verbose"))
+
+(defun unknown-option (condition)
+  (format t "warning: ~s option is unknown!~%" (opts:option condition))
+  (invoke-restart 'opts:skip-option))
+
+(defmacro when-option ((options opt) &body body)
+  `(let ((it (getf ,options ,opt)))
+     (when it
+       ,@body)))
+
+
 (defun help ()
-  "Display the help of the command."
-  (format *error-output* "Usage: ~a <script>~%" *program*)
+  (opts:describe
+   :prefix "pgsnipe — A tool to manage PostgreSQL migrations"
+   ;; :suffix "so that's how it works…"
+   :usage-of "pgsnipe"
+   :args     "<script>")
   (sb-ext:exit :abort t))
 
+
 (defun main ()
-  (let ((*program* (first sb-ext:*posix-argv*))
-        (args (subseq sb-ext:*posix-argv* 1)))
-    (cond
-      ((equalp args '("--version"))
-       (format t "pgsnipe ~a~%" pgsnipe::*version*))
+  (multiple-value-bind (options free-args)
+      (handler-case
+          (handler-bind ((opts:unknown-option #'unknown-option))
+            (opts:get-opts))
+        (opts:missing-arg (condition)
+          (format t "fatal: option ~s needs an argument!~%"
+                  (opts:option condition)))
 
-      ((equalp args '("--help"))
-       (help))
+        (opts:arg-parser-failed (condition)
+          (format t "fatal: cannot parse ~s as argument of ~s~%"
+                  (opts:raw-arg condition)
+                  (opts:option condition))))
+    
+    ;; Here all options are checked independently, it's trivial to code any
+    ;; logic to process them.
+    (when-option (options :help)
+      (help))
+    
+    (when-option (options :verbose)
+      (format t "OK, running in verbose mode…~%"))
 
-      (t
-       (unless (= (length args) 1)
-         (help))
+    (unless (= (length free-args) 1)
+      (help))
 
-       (handler-case
-           (let ((script (first args)))
-             #+nil (pgsnipe/migrate:migrate "postgres:///" script))
+    (let ((script (first free-args))
+          (commit (getf options :commit)))
 
-         (postmodern:database-error (condition)
-           (format *error-output* "ERROR: ~a~%" (postmodern:database-error-message condition)))
+      (handler-case
+          (migrate "postgres://" script :commit commit)
 
-         (simple-error (condition)
-           (format *error-output* "ERROR: ~?"
-                   (simple-condition-format-control condition)
-                   (simple-condition-format-arguments condition))))))))
+        (database-error (condition)
+          (format *error-output* "error: ~a~%" (database-error-message condition)))
+
+        (simple-error (condition)
+          (format *error-output* "error: ~?"
+                  (simple-condition-format-control condition)
+                  (simple-condition-format-arguments condition)))))))

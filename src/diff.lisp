@@ -96,7 +96,7 @@ order of the elements is not considered."
 
 ;;; Sequences
 
-(defmethod create ((seq sequence))
+(defmethod create ((seq sequence*))
   (list
    (with-output-to-string (out)
      (format out "CREATE SEQUENCE ~a~%" (sql-qualified-name seq))
@@ -112,7 +112,7 @@ order of the elements is not considered."
 (defmethod drop ((seq sequence))
   (list (format nil "DROP SEQUENCE ~a;" (sql-qualified-name seq))))
 
-(defmethod alter ((source sequence) (target sequence))
+(defmethod alter ((source sequence*) (target sequence*))
   (let ((alters
          (remove nil
                  (list
@@ -270,6 +270,8 @@ order of the elements is not considered."
       (format stream "SET search_path TO ~a;~%" schema))
 
     (write-line "BEGIN TRANSACTION;" stream)
+    (write-line "" stream)
+    
     (dolist (x (diff source target))
       (write-line x stream))
     (terpri stream)

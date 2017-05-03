@@ -61,7 +61,3 @@ attributes to pass to postmodern to establish the connection."
            (or (uri-host uri) (get-param "host") :unix)
            ;; Port
            :port (or (uri-port uri) (get-param "port") 5432)))))))
-
-
-
-
