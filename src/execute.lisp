@@ -52,7 +52,6 @@
 
 (defun consume-dollar-quoted-string ()
   (let ((tag (read-to #\$)))
-    (print (list 'start tag))
     (loop
        for ch = (next-char)
        when (char= ch #\$)
