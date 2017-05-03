@@ -23,8 +23,15 @@
 
 (in-package :pgsnipe/tmpdb)
 
+
+(defvar *maintenance-database* "postgres"
+  "The database that pgsnipe will connect to in order to create the
+new database. By default, the 'postgres' database is created, as all
+the PostgreSQL utility commands do.")
+
+
 (defun create-tmpdb ()
-  (with-connection (list "postgres" (get-username) nil :unix)
+  (with-connection (list *maintenance-database* (get-username) nil :unix)
     (loop
        for i from 1 to 5
        do (let ((name (format nil "pgsnipe_tmpl_~d" i)))
