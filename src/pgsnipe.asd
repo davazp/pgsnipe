@@ -26,4 +26,4 @@
   :license "GPLv3"
   :class :package-inferred-system
   :defsystem-depends-on (:asdf-package-system)
-  :depends-on (:uiop :pgsnipe/all))
+  :depends-on (:uiop :pgsnipe/main))
