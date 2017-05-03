@@ -17,7 +17,6 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with pgsnipe.  If not, see <http://www.gnu.org/licenses/>.
 
-
 (uiop:define-package :pgsnipe/migrate
   (:mix :pgsnipe/diff
         :pgsnipe/tmpdb
@@ -29,7 +28,7 @@
 (in-package :pgsnipe/migrate)
 
 
-(defun migrate (connstring script)
+(defun migrate (connstring script &rest others &key &allow-other-keys)
   "Migrate the database at CONNSTRING to look like the database
 described in the SCRIPT file."
   ;; We open the script early to ensure it exists, as it is a faster
@@ -41,13 +40,14 @@ described in the SCRIPT file."
            (progn
              ;; Create the temporary table and apply the script to it.
              (execute-stream tmpdb-connstring input)
-             ;; Generate the script to update the database
+             ;; Generate the script to update the database, by
+             ;; comparing the temporary database we just created to
+             ;; the target database.
              (let ((delta
                     (with-output-to-string (out)
-                      (generate-diff tmpdb-connstring connstring out :commit t))))
+                      (apply #'generate-diff tmpdb-connstring connstring out others))))
                (write-string delta *standard-output*)
-               ;; Apply the script
+               ;; Apply the delta script generated to the target database
                (execute-string connstring delta)))
-        
         ;; Destroy the temporary database
         (dropdb tmpdb)))))
