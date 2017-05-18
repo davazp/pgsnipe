@@ -20,6 +20,7 @@
 (uiop/package:define-package :pgsnipe/main
   (:nicknames :pgsnipe)
   (:use :common-lisp
+        :pgsnipe/version
         :pgsnipe/tmpdb
         :pgsnipe/execute
         :pgsnipe/inspect
@@ -28,11 +29,6 @@
   (:export #:migrate))
 
 (in-package :pgsnipe/main)
-
-(defvar *version*
-  (asdf:component-version (asdf:find-system "pgsnipe"))
-  "The pgsnipe version")
-
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (require "sb-concurrency"))
