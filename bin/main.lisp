@@ -58,12 +58,11 @@
 
 
 (defun help ()
-  (opts:describe
-   :prefix "pgsnipe — A tool to manage PostgreSQL migrations"
-   ;; :suffix "so that's how it works…"
-   :usage-of "pgsnipe"
-   :args     "<script>")
-  (sb-ext:exit :abort t))
+  (let ((stream *standard-output*))
+    (format stream "pgsnipe — A tool to manage PostgreSQL migrations~%~%")
+    (format stream "Usage: pgsnipe [options] <script>~%")
+    (opts:describe :stream stream)
+    (sb-ext:exit :abort t)))
 
 
 (defun main ()
