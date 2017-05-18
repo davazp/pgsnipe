@@ -26,7 +26,7 @@
         :pgsnipe/inspect
         :pgsnipe/diff
         :alexandria)
-  (:export #:migrate))
+  (:export #:migrate #:*version*))
 
 (in-package :pgsnipe/main)
 

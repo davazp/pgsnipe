@@ -42,7 +42,10 @@
   (:name :verbose
    :description "verbose output"
    :short #\v
-   :long "verbose"))
+   :long "verbose")
+  (:name :version
+   :description "print the version information and exit"
+   :long "version"))
 
 (defun unknown-option (condition)
   (format t "warning: ~s option is unknown!~%" (opts:option condition))
@@ -84,6 +87,11 @@
     
     (when-option (options :verbose)
       (format t "OK, running in verbose mode…~%"))
+
+    (when-option (options :version)
+      (format t "pgsnipe ~a~%" *version*)
+      (sb-ext:exit))
+
 
     (unless (= (length free-args) 1)
       (help))
