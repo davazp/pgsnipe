@@ -19,7 +19,7 @@
 
 
 (defpackage :pgsnipe/connstring
-  (:use :common-lisp :quri :pgsnipe/utils)
+  (:use :common-lisp :uiop :quri :pgsnipe/utils)
   (:export #:parse))
 
 (in-package :pgsnipe/connstring)
@@ -50,7 +50,8 @@ attributes to pass to postmodern to establish the connection."
            ;; Database
            (if (uri-path uri)
                (subseq (uri-path uri) 1)
-               (get-username))
+               (or (uiop:getenv "PGDATABASE")
+                   (get-username)))
            ;; User
            (or user
                (get-param "user")
@@ -60,4 +61,6 @@ attributes to pass to postmodern to establish the connection."
            ;; Host
            (or (uri-host uri) (get-param "host") :unix)
            ;; Port
-           :port (or (uri-port uri) (get-param "port") 5432)))))))
+           :port (or (uri-port uri)
+                     (get-param "port")
+                     5432)))))))
