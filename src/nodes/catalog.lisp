@@ -21,6 +21,7 @@
   (:use :common-lisp :pgsnipe/nodes/base)
   (:export #:catalog
            #:catalog-name
+           #:catalog-server-version
            #:catalog-schemata
            #:catalog-sequences
            #:catalog-tables
@@ -38,6 +39,9 @@
    (connection-string
     :initarg :connection-string
     :reader catalog-connection-string)
+   (server-version
+    :initarg :server-version
+    :accessor catalog-server-version)
    (schemata
     :initarg :schemata
     :type list

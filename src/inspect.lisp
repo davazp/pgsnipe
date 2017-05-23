@@ -259,7 +259,8 @@ WHERE deptype='n'
              (catalog (make-instance 'catalog :name name :connection-string connstring))
              (*object-index* (make-object-index)))
 
-        (setf (catalog-sequences catalog) (inspect-sequences)
+        (setf (catalog-server-version catalog) (query-implementation-info)
+              (catalog-sequences catalog) (inspect-sequences)
               (catalog-schemata catalog) (inspect-schemata)
               (catalog-tables catalog) (inspect-tables))
         ;; 
